@@ -231,5 +231,11 @@ We appreciate the following GitHub repos a lot for their valuable code and effor
 ## Contact
 
 If you have any questions or want to use the code, feel free to contact:
+
+Current:
+* Jiawei Li (jarvis-li@outlook.com or jli226@connect.hkust-gz.edu.cn)
+* Kevin Liu (kevinliu2000@163.com)
+
+Previous:
 * Shiyu Wang (kwuking@163.com or weiming.wsy@antgroup.com)
 * Haixu Wu (wuhx23@mails.tsinghua.edu.cn)
