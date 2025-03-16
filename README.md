@@ -181,7 +181,20 @@ We compare the running memory and time against the latest state-of-the-art model
 </p>
 
 ## Further Reading
-1, [**TimeMixer++: A General Time Series Pattern Machine for Universal Predictive Analysis**](https://arxiv.org/abs/2410.16032), in *arXiv* 2024.
+1, [**TimeDistill: Efficient Long-Term Time Series Forecasting with MLP via Cross-Architecture Distillation**](https://arxiv.org/abs/2502.15016), in *arXiv* 2025.
+
+**Authors**: Juntong Ni, Zewen Liu, Shiyu Wang*, Ming Jin, Wei Jin
+
+```bibtex
+@article{ni2025timedistill,
+  title={TimeDistill: Efficient Long-Term Time Series Forecasting with MLP via Cross-Architecture Distillation},
+  author={Ni, Juntong and Liu, Zewen and Wang, Shiyu and Jin, Ming and Jin, Wei},
+  journal={arXiv preprint arXiv:2502.15016},
+  year={2025}
+}
+```
+
+2, [**TimeMixer++: A General Time Series Pattern Machine for Universal Predictive Analysis**](https://arxiv.org/abs/2410.16032), in *arXiv* 2024.
 
 **Authors**: Shiyu Wang*, Jiawei Li*, Xiaoming Shi, Zhou Ye, Baichuan Mo, Wenze Lin, Shengtong Ju, Zhixuan Chu, Ming Jin
 
@@ -194,7 +207,7 @@ We compare the running memory and time against the latest state-of-the-art model
 }
 ```
 
-2, [**Time-LLM: Time Series Forecasting by Reprogramming Large Language Models**](https://arxiv.org/abs/2310.01728), in *ICLR* 2024.
+3, [**Time-LLM: Time Series Forecasting by Reprogramming Large Language Models**](https://arxiv.org/abs/2310.01728), in *ICLR* 2024.
 [\[GitHub Repo\]](https://github.com/KimMeen/Time-LLM)
 
 **Authors**: Ming Jin*, Shiyu Wang*, Lintao Ma, Zhixuan Chu, James Y. Zhang, Xiaoming Shi, Pin-Yu Chen, Yuxuan Liang, Yuan-Fang Li, Shirui Pan, Qingsong Wen
@@ -208,7 +221,7 @@ We compare the running memory and time against the latest state-of-the-art model
 }
 ```
 
-3, [**iTransformer: Inverted Transformers Are Effective for Time Series Forecasting**](https://arxiv.org/abs/2310.06625), in *ICLR* 2024 Spotlight.
+4, [**iTransformer: Inverted Transformers Are Effective for Time Series Forecasting**](https://arxiv.org/abs/2310.06625), in *ICLR* 2024 Spotlight.
 [\[GitHub Repo\]](https://github.com/thuml/iTransformer)
 
 **Authors**: Yong Liu, Tengge Hu, Haoran Zhang, Haixu Wu, Shiyu Wang*, Lintao Ma, Mingsheng Long
