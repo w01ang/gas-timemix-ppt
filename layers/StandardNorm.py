@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 
-
 class Normalize(nn.Module):
     def __init__(self, num_features: int, eps=1e-5, affine=False, subtract_last=False, non_norm=False):
         """
