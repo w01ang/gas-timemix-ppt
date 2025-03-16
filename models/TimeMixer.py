@@ -5,7 +5,6 @@ from layers.Autoformer_EncDec import series_decomp
 from layers.Embed import DataEmbedding_wo_pos
 from layers.StandardNorm import Normalize
 
-
 class DFT_series_decomp(nn.Module):
     """
     Series decomposition block
@@ -510,7 +509,6 @@ class Model(nn.Module):
         dec_out = dec_out + \
                   (means[:, 0, :].unsqueeze(1).repeat(1, self.seq_len, 1))
         return dec_out
-
 
     def forward(self, x_enc, x_mark_enc, x_dec, x_mark_dec, mask=None):
         if self.task_name == 'long_term_forecast' or self.task_name == 'short_term_forecast':
