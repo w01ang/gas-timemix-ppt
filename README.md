@@ -57,7 +57,7 @@
 
 🚩 **News** (2024.10): **TimeMixer++** introduction in **[Chinese](https://mp.weixin.qq.com/s/l_MB11XoShV7vK3BjtEPog)** is now available！
 
-🚩 **News** (2024.10): We have newly released **[TimerMixer++](https://arxiv.org/abs/2410.16032)** as an upgraded version of TimeMixer. **TimeMixer++ is a time series pattern machine** that employs multi-scale and multi-resolution pattern extraction to **achieve 🏆state-of-the-art across 8 diverse analytical tasks!** 
+🚩 **News** (2024.10): We have newly released **[TimeMixer++](https://arxiv.org/abs/2410.16032)** as an upgraded version of TimeMixer. **TimeMixer++ is a time series pattern machine** that employs multi-scale and multi-resolution pattern extraction to **achieve 🏆state-of-the-art across 8 diverse analytical tasks!** 
 
 🚩 **News** (2024.07): TimeMixer has been included in **[NeuralForecast](https://github.com/Nixtla/neuralforecast)**. Special thanks to the contributor @[marcopeix](https://github.com/marcopeix) and @[JQGoh](https://github.com/JQGoh)!
 
@@ -250,5 +250,5 @@ Current:
 * Kevin Liu (kevinliu2000@163.com)
 
 Previous:
-* Shiyu Wang (kwuking@163.com or weiming.wsy@antgroup.com)
+* Shiyu Wang (weiming.wsy@antgroup.com)
 * Haixu Wu (wuhx23@mails.tsinghua.edu.cn)
