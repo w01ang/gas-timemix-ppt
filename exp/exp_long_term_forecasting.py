@@ -292,26 +292,6 @@ class Exp_Long_Term_Forecast(Exp_Basic):
             preds = test_data.inverse_transform(preds.reshape(-1, C)).reshape(B, T, C)
             trues = test_data.inverse_transform(trues.reshape(-1, C)).reshape(B, T, C)
 
-        # result save
-        folder_path = './results/' + setting + '/'
-        if not os.path.exists(folder_path):
-            os.makedirs(folder_path)
-
         mae, mse, rmse, mape, mspe = metric(preds, trues)
         print('mse:{}, mae:{}'.format(mse, mae))
-        print('rmse:{}, mape:{}, mspe:{}'.format(rmse, mape, mspe))
-
-        f = open("result_long_term_forecast.txt", 'a')
-        f.write(setting + "  \n")
-        if self.args.data == 'PEMS':
-            f.write('mae:{}, mape:{}, rmse:{}'.format(mae, mape, rmse))
-        else:
-            f.write('mse:{}, mae:{}'.format(mse, mae))
-        f.write('\n')
-        f.write('\n')
-        f.close()
-
-        np.save(folder_path + 'metrics.npy', np.array([mae, mse, rmse, mape, mspe]))
-        np.save(folder_path + 'pred.npy', preds)
-        np.save(folder_path + 'true.npy', trues)
         return
