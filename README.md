@@ -27,17 +27,6 @@
 
 </div>
 
-🌟🌟🌟Our latest research: "**TimeMixer++: A General Time Series Pattern Machine for Universal Predictive Analysis**", in arXiv 2024. [\[paper\]](https://arxiv.org/abs/2410.16032)
-
-```bibtex
-@article{wang2024timemixer++,
-  title={TimeMixer++: A General Time Series Pattern Machine for Universal Predictive Analysis},
-  author={Wang, Shiyu and Li, Jiawei and Shi, Xiaoming and Ye, Zhou and Mo, Baichuan and Lin, Wenze and Ju, Shengtong and Chu, Zhixuan and Jin, Ming},
-  journal={arXiv preprint arXiv:2410.16032},
-  year={2024}
-}
-```
-
 ---
 >
 > 🙋 Please let us know if you find out a mistake or have any suggestions!
@@ -51,11 +40,19 @@
   booktitle={International Conference on Learning Representations (ICLR)},
   year={2024}
 }
+
+@article{wang2024timemixer++,
+  title={TimeMixer++: A General Time Series Pattern Machine for Universal Predictive Analysis},
+  author={Wang, Shiyu and Li, Jiawei and Shi, Xiaoming and Ye, Zhou and Mo, Baichuan and Lin, Wenze and Ju, Shengtong and Chu, Zhixuan and Jin, Ming},
+  journal={arXiv preprint arXiv:2410.16032},
+  year={2024}
+}
+
 ```
 
 # Updates
 
-🚩 **News** (2024.10): **TimeMixer++** introduction in **[Chinese](https://mp.weixin.qq.com/s/l_MB11XoShV7vK3BjtEPog)** is now available！
+🚩 **News** (2024.10): **TimeMixer** series has been possessed in **[PyPOTS](https://pypots.com/)**. Many thanks to the PyPOTS team.
 
 🚩 **News** (2024.10): We have newly released **[TimeMixer++](https://arxiv.org/abs/2410.16032)** as an upgraded version of TimeMixer. **TimeMixer++ is a time series pattern machine** that employs multi-scale and multi-resolution pattern extraction to **achieve 🏆state-of-the-art across 8 diverse analytical tasks!** 
 
