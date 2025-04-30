@@ -143,7 +143,7 @@ We conduct extensive experiments to evaluate the performance and efficiency of T
 
 ### Long-term Forecasting
 
-To ensure model comparison fairness, experiments were performed with standardized parameters, aligning input lengths, batch sizes, and training epochs. Additionally, given that results in various studies often stem from hyperparameter optimization, we include outcomes from comprehensive parameter searches.
+To ensure fairness in model comparison, experiments were performed with standardized parameters, including aligned input lengths, batch sizes, and training epochs. Additionally, given that results in various studies often stem from hyperparameter optimization, we include outcomes from comprehensive parameter searches.
 
 <p align="center">
 <img src="./figures/long_results.png"  alt="" align=center />
