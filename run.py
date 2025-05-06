@@ -90,6 +90,7 @@ parser.add_argument('--patience', type=int, default=15, help='early stopping pat
 parser.add_argument('--learning_rate', type=float, default=0.001, help='optimizer learning rate')
 parser.add_argument('--des', type=str, default='test', help='exp description')
 parser.add_argument('--loss', type=str, default='MSE', help='loss function')
+parser.add_argument('--drop_last', type=bool, default=True, help='drop last')
 parser.add_argument('--lradj', type=str, default='TST', help='adjust learning rate')
 parser.add_argument('--pct_start', type=float, default=0.2, help='pct_start')
 parser.add_argument('--use_amp', action='store_true', help='use automatic mixed precision training', default=False)
