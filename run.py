@@ -76,7 +76,7 @@ parser.add_argument('--use_future_temporal_feature', type=int, default=0,
                     help='whether to use future_temporal_feature; True 1 False 0')
 
 # imputation task
-parser.add_argument('--mask_rate', type=float, default=0.25, help='mask ratio')
+parser.add_argument('--mask_rate', type=float, default=0.125, help='mask ratio')
 
 # anomaly detection task
 parser.add_argument('--anomaly_ratio', type=float, default=0.25, help='prior anomaly ratio (%)')
@@ -166,7 +166,7 @@ if __name__ == '__main__':
         setting = '{}_{}_{}_{}_{}_sl{}_pl{}_dm{}_nh{}_el{}_dl{}_df{}_fc{}_eb{}_dt{}_{}_{}'.format(
             args.task_name,
             args.model_id,
-            args.comment,
+            args.comment, 
             args.model,
             args.data,
             args.seq_len,
