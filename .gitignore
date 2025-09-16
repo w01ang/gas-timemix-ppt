@@ -1,9 +1,86 @@
-.DS_store
-.python-version
-*.pth
-result_*.txt
-
+# Python
 __pycache__/
-dataset/
-results/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# PyTorch
+*.pth
+*.pt
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Environment
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Project specific
+checkpoints/
 test_results/
+results_archive/
+experiments/
+*.log
+*.out
+*.pdf
+*.csv
+*.png
+*.jpg
+*.jpeg
+
+# Backup files
+*_backup.py
+*_backup_*
+scripts_backup_*/
+
+# Temporary files
+temp/
+tmp/
+*.tmp
+*.temp
+
+# Data files (if too large)
+data/*.csv
+data/*.pkl
+data/*.npy
+
+# Model files (if too large)
+models/*.pth
+models/*.pt

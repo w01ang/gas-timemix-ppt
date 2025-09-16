@@ -4,6 +4,8 @@ import torch
 import matplotlib.pyplot as plt
 
 plt.switch_backend('agg')
+# 使用 Times New Roman 作为全局字体
+plt.rcParams['font.family'] = 'Times New Roman'
 
 
 def adjust_learning_rate(optimizer, scheduler, epoch, args, printout=True):

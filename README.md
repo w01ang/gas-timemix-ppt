@@ -1,252 +1,183 @@
-<div align="center">
-  <!-- <h1><b> Time-LLM </b></h1> -->
-  <!-- <h2><b> Time-LLM </b></h2> -->
-  <h2><b> (ICLR'24) TimeMixer: Decomposable Multiscale Mixing for Time Series Forecasting </b></h2>
-</div>
+# TimeMixer - Enhanced Well Lifecycle Prediction
 
+基于TimeMixer的井生命周期预测模型，支持不定长输入序列和定长输出序列的8:2比例预测。
 
-<div align="center">
+## 🚀 主要特性
 
-![](https://img.shields.io/github/last-commit/KimMeen/Time-LLM?color=green)
-![](https://img.shields.io/github/stars/kwuking/TimeMixer?color=yellow)
-![](https://img.shields.io/github/forks/kwuking/TimeMixer?color=lightblue)
-![](https://img.shields.io/badge/PRs-Welcome-green)
+- ✅ **不定长输入序列**: 支持动态长度的时序数据输入
+- ✅ **定长输出序列**: 生成固定长度的预测结果
+- ✅ **8:2比例预测**: 输入:输出 = 4:1 (接近8:2)
+- ✅ **无平滑过渡**: 预测值直接从模型输出开始
+- ✅ **多井多比例训练**: 支持多种分割比例的训练策略
+- ✅ **增强可视化**: 4色图表展示完整生命周期
+- ✅ **实验管理**: 完整的训练、测试、可视化、归档流程
 
-</div>
-
-<div align="center">
-
-**[<a href="https://openreview.net/pdf?id=7oLshfEIC2">Paper Page</a>]**
-**[<a href="https://iclr.cc/virtual/2024/poster/19347">ICLR Video</a>]**
-**[<a href="https://medium.com/towards-data-science/timemixer-exploring-the-latest-model-in-time-series-forecasting-056d9c883f46">Medium Blog</a>]**
-
-**[<a href="https://mp.weixin.qq.com/s/d7fEnEpnyW5T8BN08XRi7g">中文解读1</a>]**
-**[<a href="https://mp.weixin.qq.com/s/MsJmWfXuqh_pTYlwve6O3Q">中文解读2</a>]**
-**[<a href="https://zhuanlan.zhihu.com/p/686772622">中文解读3</a>]**
-**[<a href="https://mp.weixin.qq.com/s/YZ7L1hImIt-jbRT2tizyQw">中文解读4</a>]**
-
-</div>
-
----
->
-> 🙋 Please let us know if you find out a mistake or have any suggestions!
-> 
-> 🌟 If you find this resource helpful, please consider to star this repository and cite our research:
-
-```bibtex
-@inproceedings{wang2023timemixer,
-  title={TimeMixer: Decomposable Multiscale Mixing for Time Series Forecasting},
-  author={Wang, Shiyu and Wu, Haixu and Shi, Xiaoming and Hu, Tengge and Luo, Huakun and Ma, Lintao and Zhang, James Y and ZHOU, JUN},
-  booktitle={International Conference on Learning Representations (ICLR)},
-  year={2024}
-}
-
-@article{wang2024timemixer++,
-  title={TimeMixer++: A General Time Series Pattern Machine for Universal Predictive Analysis},
-  author={Wang, Shiyu and Li, Jiawei and Shi, Xiaoming and Ye, Zhou and Mo, Baichuan and Lin, Wenze and Ju, Shengtong and Chu, Zhixuan and Jin, Ming},
-  journal={arXiv preprint arXiv:2410.16032},
-  year={2024}
-}
+## 📁 项目结构
 
 ```
+TimeMixer/
+├── scripts/                          # 实验管理脚本
+│   ├── train_experiment.py           # 模型训练脚本
+│   ├── train_8_2_ratio.py           # 8:2比例专用训练脚本
+│   ├── test_and_visualize.py        # 测试和可视化脚本
+│   ├── plot_metrics.py              # 指标可视化脚本
+│   ├── archive_experiment.py        # 实验归档脚本
+│   ├── run_full_experiment.py       # 完整实验流程脚本
+│   ├── README_scripts.md            # 脚本使用说明
+│   └── QUICK_START.md               # 快速开始指南
+├── data_provider/                    # 数据加载器
+│   └── data_loader.py               # 支持不定长输入的井数据加载器
+├── exp/                             # 实验模块
+│   └── exp_long_term_forecasting.py # 长期预测实验类
+├── models/                          # 模型定义
+├── utils/                           # 工具函数
+└── README.md                        # 项目说明
+```
 
-# Updates
-
-🚩 **News** (2024.10): TimeMixer has been included in **[PyPOTS](https://pypots.com/)**. Many thanks to the PyPOTS team.
-
-🚩 **News** (2024.10): We have newly released **[TimeMixer++](https://arxiv.org/abs/2410.16032)** as an upgraded version of TimeMixer. **TimeMixer++ is a time series pattern machine** that employs multi-scale and multi-resolution pattern extraction to **achieve 🏆state-of-the-art across 8 diverse analytical tasks!** 
-
-🚩 **News** (2024.07): TimeMixer has been included in **[NeuralForecast](https://github.com/Nixtla/neuralforecast)**. Special thanks to the contributor @[marcopeix](https://github.com/marcopeix) and @[JQGoh](https://github.com/JQGoh)!
-
-🚩 **News** (2024.07) TimeMixer has evolved into a **large model supporting comprehensive time series analysis, including long-term forecasting, short-term forecasting, anomaly detection, imputation, and classification**. In the future, we will further explore additional types of time series analysis tasks and strive to break through the limitations of current long-term forecasting to achieve efficient extreme-long-term time series forecasting.
-
-🚩 **News** (2024.06) **Introduction of TimeMixer** in **[Chinese](https://mp.weixin.qq.com/s/d7fEnEpnyW5T8BN08XRi7g)** is available.
-
-🚩 **News** (2024.05) TimeMixer has now released a **28-page full paper version on [arXiv](https://arxiv.org/abs/2405.14616)**. Furthermore, we have provided a **brief [video](https://iclr.cc/virtual/2024/poster/19347)** to facilitate your understanding of our work.
-
-🚩 **News** (2024.05) TimeMixer currently **supports using future temporal features for prediction**. This feature has been well-received by the community members. You can now decide whether to enable this feature by using the parameter use_future_temporal_feature.
-
-🚩 **News** (2024.03) TimeMixer has been included in [[**Time-Series-Library**]](https://github.com/thuml/Time-Series-Library) and achieve the consistent 🏆**state-of-the-art** in **long-term time and short-term series forecasting** .
-
-🚩 **News** (2024.03) TimeMixer has added a time-series decomposition method based on DFT, as well as downsampling operation based on 1D convolution.
-
-🚩 **News** (2024.02) TimeMixer has been accepted as **ICLR 2024 Poster**.
-
-## Introduction
-🏆 **TimeMixer**, as a fully MLP-based architecture, taking full advantage of disentangled multiscale time series, is proposed to **achieve consistent SOTA performances in both long and short-term forecasting tasks with favorable run-time efficiency**.
-
-🌟**Observation 1: History Extraction** 
-
-Given that seasonal and trend components exhibit significantly different characteristics in time series, and different scales of the time series reflect different properties, with seasonal characteristics being more pronounced at a fine-grained micro-scale and trend characteristics being more pronounced at a coarse macro scale, it is, therefore, necessary to decouple seasonal and trend components at different scales.
-
-<p align="center">
-<img src="./figures/motivation1.png"  alt="" align=center />
-</p>
-
-🌟**Observation 2: Future Prediction** 
-
-Different scales exhibit complementary predictive capabilities when integrating forecasts from different scales to obtain the final prediction results.
-
-<p align="center">
-<img src="./figures/motivation2.png"  alt="" align=center />
-</p>
-
-## Overall Architecture
-TimeMixer as a fully MLP-based architecture with **Past-Decomposable-Mixing (PDM)** and **Future-Multipredictor-Mixing (FMM)** blocks to take full advantage of disentangled multiscale series in both past extraction and future prediction phases. 
-
-<p align="center">
-<img src="./figures/overall.png"  alt="" align=center />
-</p>
-
-### Past Decomposable Mixing 
-we propose the **Past-Decomposable-Mixing (PDM)** block to mix the decomposed seasonal and trend components in multiple scales separately. 
-
-<p align="center">
-<img src="./figures/past_mixing1.png"  alt="" align=center />
-</p>
-
-Empowered by seasonal and trend mixing, PDM progressively aggregates the detailed seasonal information from fine to coarse and dive into the macroscopic trend information with prior knowledge from coarser scales, eventually achieving the multiscale mixing in past information extraction.
-
-<p align="center">
-<img src="./figures/past_mixing2.png"  alt="" align=center />
-</p>
-
-### Future Multipredictor Mixing 
-Note that **Future Multipredictor Mixing (FMM)** is an ensemble of multiple predictors, where different predictors are based on past information from different scales, enabling FMM to integrate complementary forecasting capabilities of mixed multiscale series.
-
-<p align="center">
-<img src="./figures/future_mixing.png"  alt="" align=center />
-</p>
-
-
-
-## Get Started
-
-1. Install requirements. ```pip install -r requirements.txt```
-    > If you are using **Python 3.8**, please change the `sktime` version in `requirements.txt` to `0.29.1`
-2. Download data. You can download all datasets from [Google Driver](https://drive.google.com/u/0/uc?id=1NF7VEefXCmXuWNbnNe858WvQAkJ_7wuP&export=download), [Baidu Driver](https://pan.baidu.com/share/init?surl=r3KhGd0Q9PJIUZdfEYoymg&pwd=i9iy) or [Kaggle Datasets](https://www.kaggle.com/datasets/wentixiaogege/time-series-dataset). **All the datasets are well pre-processed** and can be used easily.
-3. Train the model. We provide the experiment scripts of all benchmarks under the folder `./scripts`. You can reproduce the experiment results by:
+## 🛠️ 环境要求
 
 ```bash
-bash ./scripts/long_term_forecast/ETT_script/TimeMixer_ETTm1.sh
-bash ./scripts/long_term_forecast/ECL_script/TimeMixer.sh
-bash ./scripts/long_term_forecast/Traffic_script/TimeMixer.sh
-bash ./scripts/long_term_forecast/Solar_script/TimeMixer.sh
-bash ./scripts/long_term_forecast/Weather_script/TimeMixer.sh
-bash ./scripts/short_term_forecast/M4/TimeMixer.sh
-bash ./scripts/short_term_forecast/PEMS/TimeMixer.sh
+# 创建conda环境
+conda create -n timemixer python=3.10
+conda activate timemixer
+
+# 安装依赖
+pip install torch torchvision torchaudio
+pip install numpy pandas matplotlib scikit-learn
+pip install scipy seaborn
 ```
 
-## Main Results
-We conduct extensive experiments to evaluate the performance and efficiency of TimeMixer, covering long-term and short-term forecasting, including 18 real-world benchmarks and 15 baselines.
-**🏆 TimeMixer achieves consistent state-of-the-art performance in all benchmarks**, covering a large variety of series with different frequencies, variate numbers and real-world scenarios.
+## 🚀 快速开始
 
-### Long-term Forecasting
+### 1. 8:2比例模型训练
 
-To ensure fairness in model comparison, experiments were performed with standardized parameters, including aligned input lengths, batch sizes, and training epochs. Additionally, given that results in various studies often stem from hyperparameter optimization, we include outcomes from comprehensive parameter searches.
+```bash
+# 激活环境
+conda activate timemixer
 
-<p align="center">
-<img src="./figures/long_results.png"  alt="" align=center />
-</p>
-
-### Short-term Forecasting: Multivariate data
-
-<p align="center">
-<img src="./figures/pems_results.png"  alt="" align=center />
-</p>
-
-###  Short-term Forecasting: Univariate data
-
-<p align="center">
-<img src="./figures/m4_results.png"  alt="" align=center />
-</p>
-
-
-## Model Abalations
-
-To verify the effectiveness of each component of TimeMixer, we provide the detailed ablation study on every possible design in both Past-Decomposable-Mixing and Future-Multipredictor-Mixing blocks on all 18 experiment benchmarks （see our paper for full results 😊）.
-
-<p align="center">
-<img src="./figures/ablation.png"  alt="" align=center />
-</p>
-
-## Model Efficiency
-We compare the running memory and time against the latest state-of-the-art models under the training phase, where TimeMixer consistently demonstrates favorable efficiency, in terms of both GPU memory and running time, for various series lengths (ranging from 192 to 3072), in addition to the consistent state-of-the-art performances for both long-term and short-term forecasting tasks.
-**It is noteworthy that TimeMixer, as a deep model, demonstrates results close to those of full-linear models in terms of efficiency. This makes TimeMixer promising in a wide range of scenarios that require high model efficiency.**
-
-<p align="center">
-<img src="./figures/efficiency.png"  alt="" align=center />
-</p>
-
-## Further Reading
-1, [**TimeDistill: Efficient Long-Term Time Series Forecasting with MLP via Cross-Architecture Distillation**](https://arxiv.org/abs/2502.15016), in *arXiv* 2025.
-
-**Authors**: Juntong Ni, Zewen Liu, Shiyu Wang*, Ming Jin, Wei Jin
-
-```bibtex
-@article{ni2025timedistill,
-  title={TimeDistill: Efficient Long-Term Time Series Forecasting with MLP via Cross-Architecture Distillation},
-  author={Ni, Juntong and Liu, Zewen and Wang, Shiyu and Jin, Ming and Jin, Wei},
-  journal={arXiv preprint arXiv:2502.15016},
-  year={2025}
-}
+# 训练8:2比例模型
+python scripts/train_8_2_ratio.py \
+    --model_id wellmix_8_2 \
+    --total_length 1000 \
+    --input_ratio 0.8 \
+    --output_ratio 0.2 \
+    --train_epochs 100
 ```
 
-2, [**TimeMixer++: A General Time Series Pattern Machine for Universal Predictive Analysis**](https://arxiv.org/abs/2410.16032), in *arXiv* 2024.
+### 2. 完整实验流程
 
-**Authors**: Shiyu Wang*, Jiawei Li*, Xiaoming Shi, Zhou Ye, Baichuan Mo, Wenze Lin, Shengtong Ju, Zhixuan Chu, Ming Jin
-
-```bibtex
-@article{wang2024timemixer++,
-  title={TimeMixer++: A General Time Series Pattern Machine for Universal Predictive Analysis},
-  author={Wang, Shiyu and Li, Jiawei and Shi, Xiaoming and Ye, Zhou and Mo, Baichuan and Lin, Wenze and Ju, Shengtong and Chu, Zhixuan and Jin, Ming},
-  journal={arXiv preprint arXiv:2410.16032},
-  year={2024}
-}
+```bash
+# 运行完整实验
+python scripts/run_full_experiment.py \
+    --model_id my_experiment \
+    --test_wells 0,1,2,3,4,5,6,7,8,9 \
+    --ratios 10,20,30,40,50,60,70,80,90 \
+    --seq_len 800 \
+    --pred_len 200
 ```
 
-3, [**Time-LLM: Time Series Forecasting by Reprogramming Large Language Models**](https://arxiv.org/abs/2310.01728), in *ICLR* 2024.
-[\[GitHub Repo\]](https://github.com/KimMeen/Time-LLM)
+### 3. 分步执行
 
-**Authors**: Ming Jin*, Shiyu Wang*, Lintao Ma, Zhixuan Chu, James Y. Zhang, Xiaoming Shi, Pin-Yu Chen, Yuxuan Liang, Yuan-Fang Li, Shirui Pan, Qingsong Wen
+```bash
+# 步骤1: 训练模型
+python scripts/train_experiment.py --model_id my_model
 
-```bibtex
-@inproceedings{jin2023time,
-  title={{Time-LLM}: Time series forecasting by reprogramming large language models},
-  author={Jin, Ming and Wang, Shiyu and Ma, Lintao and Chu, Zhixuan and Zhang, James Y and Shi, Xiaoming and Chen, Pin-Yu and Liang, Yuxuan and Li, Yuan-Fang and Pan, Shirui and Wen, Qingsong},
-  booktitle={International Conference on Learning Representations (ICLR)},
-  year={2024}
-}
+# 步骤2: 测试和可视化
+python scripts/test_and_visualize.py --model_id my_model --test_wells 0,1,2,3,4
+
+# 步骤3: 生成指标图表
+python scripts/plot_metrics.py --results_dir results_archive/my_model_no_smooth
+
+# 步骤4: 归档结果
+python scripts/archive_experiment.py --model_id my_model_no_smooth
 ```
 
-4, [**iTransformer: Inverted Transformers Are Effective for Time Series Forecasting**](https://arxiv.org/abs/2310.06625), in *ICLR* 2024 Spotlight.
-[\[GitHub Repo\]](https://github.com/thuml/iTransformer)
+## 📊 核心功能
 
-**Authors**: Yong Liu, Tengge Hu, Haoran Zhang, Haixu Wu, Shiyu Wang*, Lintao Ma, Mingsheng Long
+### 不定长输入序列支持
 
-```bibtex
-@article{liu2023itransformer,
-  title={iTransformer: Inverted Transformers Are Effective for Time Series Forecasting},
-  author={Liu, Yong and Hu, Tengge and Zhang, Haoran and Wu, Haixu and Wang, Shiyu and Ma, Lintao and Long, Mingsheng},
-  journal={arXiv preprint arXiv:2310.06625},
-  year={2023}
-}
+- **动态输入长度**: 根据数据长度自动调整输入序列长度
+- **最大输入长度**: 3000步
+- **最小输入长度**: 100步
+- **填充策略**: 输入不足时零填充
+
+### 定长输出序列
+
+- **固定输出长度**: 通过`pred_len`参数控制
+- **一致性保证**: 所有预测结果长度一致
+- **可配置性**: 支持任意长度的输出序列
+
+### 8:2比例预测
+
+- **输入比例**: 80%的历史数据作为输入
+- **输出比例**: 20%的未来数据作为预测目标
+- **灵活配置**: 支持自定义比例设置
+
+## 🔧 配置参数
+
+| 参数 | 说明 | 默认值 | 8:2比例示例 |
+|------|------|--------|-------------|
+| `seq_len` | 输入序列长度 | 3000 | 800 |
+| `pred_len` | 预测长度 | 256 | 200 |
+| `d_model` | 模型维度 | 256 | 256 |
+| `n_heads` | 注意力头数 | 16 | 16 |
+| `e_layers` | 编码器层数 | 6 | 6 |
+| `d_layers` | 解码器层数 | 3 | 3 |
+| `d_ff` | 前馈网络维度 | 1024 | 1024 |
+
+## 📈 输出结果
+
+### 可视化图表
+- **4色图表**: 早期历史(紫)、输入段(蓝)、真实输出(绿)、预测输出(橙)
+- **完整生命周期**: 展示井的完整生产周期
+- **预测窗口放大**: 详细展示预测区域
+
+### 评估指标
+- **MAE**: 平均绝对误差
+- **RMSE**: 均方根误差
+- **MAPE**: 平均绝对百分比误差
+- **跳跃分析**: 预测起始值与输入末尾值的差异
+
+### 结果文件
+```
+results_archive/
+└── {model_id}_no_smooth/
+    ├── detailed_results_no_smooth.csv      # 详细结果
+    ├── by_well_summary_no_smooth.csv       # 按井汇总
+    ├── overall_summary_no_smooth.csv       # 整体汇总
+    ├── well_0_ratio_50_no_smooth.pdf       # 井0-50%分割图表
+    ├── well_0_ratio_50_no_smooth.csv       # 井0-50%分割数据
+    └── ...                                  # 其他结果文件
 ```
 
-## Acknowledgement
+## 🎯 使用场景
 
-We appreciate the following GitHub repos a lot for their valuable code and efforts.
-- Time-Series-Library (https://github.com/thuml/Time-Series-Library)
-- Autoformer (https://github.com/thuml/Autoformer)
+- **油井产量预测**: 基于历史产量数据预测未来产量
+- **时间序列预测**: 支持任意长度的时序数据预测
+- **生产规划**: 为生产决策提供数据支持
+- **异常检测**: 通过预测偏差识别异常情况
 
-## Contact
+## 📝 主要改进
 
-If you have any questions or want to use the code, feel free to contact:
+1. **支持不定长输入**: 修改数据加载器支持动态输入长度
+2. **8:2比例预测**: 实现输入:输出=4:1的预测比例
+3. **无平滑过渡**: 去除人工平滑，保持模型原始预测能力
+4. **增强可视化**: 4色图表展示完整生命周期
+5. **实验管理**: 完整的训练、测试、可视化、归档流程
+6. **多井多比例**: 支持多种分割比例的训练策略
 
-Current:
-* Jiawei Li (jarvis-li@outlook.com or jli226@connect.hkust-gz.edu.cn)
-* Kevin Liu (kevinliu2000@163.com)
+## 🤝 贡献
 
-Previous:
-* Shiyu Wang (weiming.wsy@antgroup.com)
-* Haixu Wu (wuhx23@mails.tsinghua.edu.cn)
+欢迎提交Issue和Pull Request来改进项目！
+
+## 📄 许可证
+
+本项目基于原始TimeMixer项目进行修改和增强。
+
+## 📞 联系方式
+
+如有问题，请通过GitHub Issues联系。
+
+---
+**版本**: v2.0 (无平滑过渡版本)  
+**更新时间**: 2025-09-16
