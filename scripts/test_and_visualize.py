@@ -19,6 +19,7 @@ from argparse import Namespace
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from exp.exp_long_term_forecasting import Exp_Long_Term_Forecast
+from data_provider.data_factory import data_provider
 import torch
 
 # 设置中文字体
@@ -34,12 +35,67 @@ def load_experiment_config(model_id):
     with open(config_path, 'r') as f:
         config = json.load(f)
     
-    args = Namespace(**config)
-    args.is_training = 0  # 测试模式
+    # 填充必要默认参数，兼容训练时保存的精简配置
+    defaults = {
+        'task_name': 'long_term_forecast',
+        'is_training': 0,
+        'model': 'TimeMixer',
+        'data': 'WELLS',
+        'root_path': '/Users/wangjr/Documents/yk/timemixer/timemixer-ppt/data',
+        'data_path': 'preprocessed_daily_gas_by_well.csv',
+        'features': 'S',
+        'target': 'OT',
+        'freq': 'd',
+        'checkpoints': './checkpoints/',
+        'embed': 'timeF',
+        'dropout': 0.1,
+        'seasonal_patterns': 'Monthly',
+        'inverse': True,
+        'top_k': 5,
+        'num_kernels': 6,
+        'enc_in': 1,
+        'dec_in': 1,
+        'c_out': 1,
+        'channel_independence': 1,
+        'moving_avg': 49,
+        'decomp_method': 'moving_avg',
+        'factor': 1,
+        'use_norm': 1,
+        'down_sampling_layers': 1,
+        'down_sampling_window': 2,
+        'down_sampling_method': 'avg',
+        'use_future_temporal_feature': 0,
+        'mask_rate': 0.125,
+        'anomaly_ratio': 0.25,
+        'num_workers': 0,
+        'itr': 1,
+        'batch_size': 8,
+        'patience': 20,
+        'learning_rate': 1e-4,
+        'des': 'enhanced',
+        'loss': 'MSE',
+        'drop_last': True,
+        'lradj': 'TST',
+        'pct_start': 0.2,
+        'use_amp': False,
+        'use_gpu': False,
+        'gpu': 0,
+        'use_multi_gpu': False,
+        'devices': '0,1',
+        'p_hidden_dims': [128, 128],
+        'p_hidden_layers': 2,
+    }
+    # 如果未提供label_len，则令其等于pred_len
+    if 'pred_len' in config and 'label_len' not in config:
+        config['label_len'] = config['pred_len']
+
+    merged = {**defaults, **config}
+    args = Namespace(**merged)
     return args
 
 def improved_predict_no_smooth(full_series, split_idx, model, args, mean, std):
     """改进的预测方法，无平滑过渡"""
+    device = next(model.parameters()).device  # 获取模型所在设备
     ctx = full_series[max(0, split_idx - args.seq_len):split_idx]
     window = np.zeros((args.seq_len, 1), dtype=np.float32)
     ctx_scaled = ((ctx - mean) / std).astype(np.float32).reshape(-1,1)
@@ -51,10 +107,10 @@ def improved_predict_no_smooth(full_series, split_idx, model, args, mean, std):
     
     while remain > 0:
         current = min(step_len, remain)
-        x_enc = torch.from_numpy(window[-args.seq_len:]).unsqueeze(0).float()
-        x_mark_enc = torch.zeros((1, args.seq_len, 3), dtype=torch.float32)
-        y_mark = torch.zeros((1, args.label_len + current, 3), dtype=torch.float32)
-        dec_inp = None if args.down_sampling_layers != 0 else torch.zeros((1, args.label_len + current, 1), dtype=torch.float32)
+        x_enc = torch.from_numpy(window[-args.seq_len:]).unsqueeze(0).float().to(device)
+        x_mark_enc = torch.zeros((1, args.seq_len, 3), dtype=torch.float32).to(device)
+        y_mark = torch.zeros((1, args.label_len + current, 3), dtype=torch.float32).to(device)
+        dec_inp = None if args.down_sampling_layers != 0 else torch.zeros((1, args.label_len + current, 1), dtype=torch.float32).to(device)
         
         with torch.no_grad():
             out = model(x_enc, x_mark_enc, dec_inp, y_mark)
@@ -82,14 +138,16 @@ def enhanced_well_prediction_visualization(exp, well_idx, ratio, output_dir, plo
     """增强的井预测可视化（无平滑过渡）"""
     print(f"  Well {well_idx}, Ratio {ratio*100:.0f}%")
     
-    # 获取测试数据
-    test_data = exp.data_loader.test_dataset
+    # 获取测试数据（直接通过数据工厂创建）
+    test_dataset, _ = data_provider(exp.args, 'test')
+    test_data = test_dataset
     full_series = test_data.well_series[well_idx]
     total_len = len(full_series)
     split_idx = int(total_len * ratio)
     
-    # 确保有足够的数据
-    if split_idx < exp.args.seq_len or (total_len - split_idx) < exp.args.pred_len:
+    # 确保有足够的数据（放宽条件以适应更长的seq_len）
+    min_input_len = 100  # 最小输入长度
+    if split_idx < min_input_len or (total_len - split_idx) < exp.args.pred_len:
         print(f"    Skipped: insufficient data (total: {total_len}, split: {split_idx})")
         return None
     
@@ -137,14 +195,15 @@ def enhanced_well_prediction_visualization(exp, well_idx, ratio, output_dir, plo
     # 预测输出段（橙色/黄色）
     ax.plot(true_x, pred, color=plot_color, linewidth=2, label='预测输出')
     
-    # 添加分割线
-    ax.axvline(x=split_idx, color='red', linestyle='--', alpha=0.7, linewidth=2)
-    ax.axvline(x=input_start_idx, color='purple', linestyle=':', alpha=0.7, linewidth=1)
+    # 添加分割线（红色虚线=预测起点，蓝色点线=输入起点）
+    ax.axvline(x=split_idx, color='red', linestyle='--', alpha=0.8, linewidth=2, label='预测起点')
+    ax.axvline(x=input_start_idx, color='blue', linestyle=':', alpha=0.8, linewidth=1.5, label='输入起点')
     
     # 设置图形属性
     ax.set_xlabel('时间步', fontsize=12)
     ax.set_ylabel('产量', fontsize=12)
     ax.set_title(f'井 {well_idx} - 分割比例 {ratio*100:.0f}% (无平滑过渡)', fontsize=14, fontweight='bold')
+    ax.set_xlim(0, total_len - 1)
     ax.legend(fontsize=10)
     ax.grid(True, alpha=0.3)
     
@@ -210,6 +269,9 @@ def run_test_and_visualize(args, test_wells, ratios, output_dir):
     
     # 创建结果DataFrame
     results_df = pd.DataFrame(results)
+    if results_df.empty:
+        print("No results generated. Please check model checkpoints, test_wells or ratios.")
+        return results_df, pd.DataFrame(), pd.DataFrame()
     
     # 计算按井汇总
     by_well = results_df.groupby('well_idx').agg({

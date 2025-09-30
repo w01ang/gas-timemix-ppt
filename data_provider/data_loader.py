@@ -4,7 +4,11 @@ import pandas as pd
 import glob
 import re
 import torch
-from sktime.datasets import load_from_tsfile_to_dataframe
+try:
+    # Optional: only needed for UEA datasets
+    from sktime.datasets import load_from_tsfile_to_dataframe  # type: ignore
+except Exception:  # pragma: no cover - optional dependency
+    load_from_tsfile_to_dataframe = None  # defer ImportError until actually used
 from torch.utils.data import Dataset
 from sklearn.preprocessing import StandardScaler
 from utils.timefeatures import time_features
@@ -663,6 +667,10 @@ class UEAloader(Dataset):
         return all_df, labels_df
 
     def load_single(self, filepath):
+        if load_from_tsfile_to_dataframe is None:
+            raise ImportError(
+                "sktime is required for UEA datasets but is not installed or incompatible with your Python version."
+            )
         df, labels = load_from_tsfile_to_dataframe(filepath, return_separate_X_and_y=True,
                                                    replace_missing_vals_with='NaN')
         labels = pd.Series(labels, dtype="category")

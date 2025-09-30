@@ -10,12 +10,14 @@ import argparse
 import json
 import datetime
 from pathlib import Path
+import platform
 
 # 添加项目根目录到路径
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from exp.exp_long_term_forecasting import Exp_Long_Term_Forecast
 from argparse import Namespace
+import torch
 
 def train_8_2_ratio_model(args):
     """训练8:2比例模型"""
@@ -46,6 +48,10 @@ def main():
     parser.add_argument('--comment', type=str, default='8_2_ratio', help='Experiment comment')
     parser.add_argument('--description', type=str, default='8:2 input-output ratio model', help='Experiment description')
     
+    # 数据路径
+    parser.add_argument('--root_path', type=str, default='/Users/wangjr/Documents/yk/timemixer/data', help='Dataset root directory')
+    parser.add_argument('--data_path', type=str, default='preprocessed_daily_gas_by_well.csv', help='Dataset filename')
+    
     # 8:2比例参数
     parser.add_argument('--total_length', type=int, default=1000, help='Total sequence length for 8:2 ratio calculation')
     parser.add_argument('--input_ratio', type=float, default=0.8, help='Input ratio (default: 0.8)')
@@ -57,6 +63,7 @@ def main():
     parser.add_argument('--e_layers', type=int, default=6, help='Number of encoder layers')
     parser.add_argument('--d_layers', type=int, default=3, help='Number of decoder layers')
     parser.add_argument('--d_ff', type=int, default=1024, help='Feed-forward dimension')
+    parser.add_argument('--use_gpu', action='store_true', help='Enable GPU/MPS if available')
     
     # 训练参数
     parser.add_argument('--train_epochs', type=int, default=100, help='Training epochs')
@@ -93,8 +100,8 @@ def main():
         model_id=args.model_id,
         model='TimeMixer',
         data='WELLS',
-        root_path='/Users/wangjr/Documents/yk/timemixer/data',
-        data_path='preprocessed_daily_gas_by_well.csv',
+        root_path=args.root_path,
+        data_path=args.data_path,
         features='S',
         target='OT',
         freq='d',
@@ -143,13 +150,19 @@ def main():
         pct_start=0.2,
         use_amp=False,
         comment=args.comment,
-        use_gpu=False,
+        use_gpu=args.use_gpu,
         gpu=0,
         use_multi_gpu=False,
         devices='0,1',
         p_hidden_dims=[128, 128],
         p_hidden_layers=2
     )
+
+    # 自动回退：在macOS上若MPS不可用则使用CPU
+    if model_args.use_gpu and platform.system() == 'Darwin':
+        if not torch.backends.mps.is_available():
+            print('MPS not available, falling back to CPU')
+            model_args.use_gpu = False
     
     # 保存配置
     config_dir = f"experiments/{args.model_id}"
@@ -174,6 +187,7 @@ def main():
         "batch_size": args.batch_size,
         "patience": args.patience,
         "learning_rate": args.learning_rate,
+        "use_gpu": model_args.use_gpu,
         "created_at": datetime.datetime.now().isoformat()
     }
     

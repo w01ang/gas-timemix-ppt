@@ -20,67 +20,40 @@ wheels/
 .installed.cfg
 *.egg
 
-# PyTorch
-*.pth
-*.pt
-
 # Jupyter Notebook
 .ipynb_checkpoints
 
-# Environment
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-
-# IDE
-.vscode/
+# PyCharm
 .idea/
-*.swp
-*.swo
-*~
 
-# OS
+# VS Code
+.vscode/
+
+# macOS
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
+.AppleDouble
+.LSOverride
 
-# Project specific
-checkpoints/
-test_results/
-results_archive/
-experiments/
-*.log
-*.out
-*.pdf
-*.csv
-*.png
-*.jpg
-*.jpeg
+# Training outputs
+checkpoints/*/
+!checkpoints/.gitkeep
+test_results/*/
+!test_results/.gitkeep
+results_archive/*/
+!results_archive/.gitkeep
+experiments/*/
+!experiments/.gitkeep
 
-# Backup files
-*_backup.py
-*_backup_*
-scripts_backup_*/
+# Logs
+logs/*.log
+nohup.out
+
+# Large data files (keep structure, ignore data)
+data/*.csv
+!data/.gitkeep
 
 # Temporary files
-temp/
-tmp/
 *.tmp
-*.temp
-
-# Data files (if too large)
-data/*.csv
-data/*.pkl
-data/*.npy
-
-# Model files (if too large)
-models/*.pth
-models/*.pt
+*.bak
+*.swp
+*~
