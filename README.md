@@ -1,37 +1,46 @@
 # TimeMixer - Enhanced Well Lifecycle Prediction
 
-基于TimeMixer的井生命周期预测模型，支持不定长输入序列和定长输出序列的8:2比例预测。
+基于TimeMixer的井生命周期预测模型，支持固定长度输入输出的滑动窗口训练方法。
 
 ## 🚀 主要特性
 
-- ✅ **不定长输入序列**: 支持动态长度的时序数据输入
-- ✅ **定长输出序列**: 生成固定长度的预测结果
-- ✅ **8:2比例预测**: 输入:输出 = 4:1 (接近8:2)
-- ✅ **无平滑过渡**: 预测值直接从模型输出开始
-- ✅ **多井多比例训练**: 支持多种分割比例的训练策略
-- ✅ **增强可视化**: 4色图表展示完整生命周期
-- ✅ **实验管理**: 完整的训练、测试、可视化、归档流程
+- ✅ **滑动窗口训练**: 固定长度输入输出，无填充无截断
+- ✅ **清晰的参数定义**: input_len和output_len含义明确
+- ✅ **训练测试一致**: 使用相同的数据采样策略
+- ✅ **灵活的步长控制**: 支持自定义滑动步长
+- ✅ **完整的实验管理**: 训练、测试、可视化、归档一体化
+- ✅ **增强可视化**: 多窗口预测结果展示
+- ✅ **向后兼容**: 保留旧方法支持
+
+## 🆕 最新更新 (2025-10-10)
+
+实现了**全新的滑动窗口训练方法**，解决了旧方法中的诸多问题：
+- 无填充/截断，所有样本长度完全一致
+- 参数含义清晰（input_len就是输入长度，output_len就是输出长度）
+- 训练和测试使用相同策略，评估更可靠
+
+详见：[更新日志](CHANGELOG.md) | [方法对比](METHOD_COMPARISON.md) | [使用指南](SLIDING_WINDOW_GUIDE.md)
 
 ## 📁 项目结构
 
 ```
-TimeMixer/
-├── scripts/                          # 实验管理脚本
-│   ├── train_experiment.py           # 模型训练脚本
-│   ├── train_8_2_ratio.py           # 8:2比例专用训练脚本
-│   ├── test_and_visualize.py        # 测试和可视化脚本
-│   ├── plot_metrics.py              # 指标可视化脚本
-│   ├── archive_experiment.py        # 实验归档脚本
-│   ├── run_full_experiment.py       # 完整实验流程脚本
-│   ├── README_scripts.md            # 脚本使用说明
-│   └── QUICK_START.md               # 快速开始指南
+gas-timemix/
+├── scripts/                          # 实验脚本
+│   ├── train_sliding_window.py      # 🆕 滑动窗口训练（推荐）
+│   ├── test_sliding_window.py       # 🆕 滑动窗口测试（推荐）
+│   ├── train_8_2_ratio.py           # 旧：多比例训练（兼容）
+│   └── test_and_visualize.py        # 旧：多比例测试（兼容）
 ├── data_provider/                    # 数据加载器
-│   └── data_loader.py               # 支持不定长输入的井数据加载器
+│   ├── data_loader.py               # ✨ 支持滑动窗口的数据加载器
+│   └── data_factory.py              # ✨ 数据工厂（支持step_len）
 ├── exp/                             # 实验模块
 │   └── exp_long_term_forecasting.py # 长期预测实验类
-├── models/                          # 模型定义
+├── models/                          # TimeMixer模型
 ├── utils/                           # 工具函数
-└── README.md                        # 项目说明
+├── SLIDING_WINDOW_GUIDE.md          # 🆕 滑动窗口使用指南
+├── METHOD_COMPARISON.md             # 🆕 新旧方法对比
+├── CHANGELOG.md                     # 🆕 更新日志
+└── README.md                        # 本文件
 ```
 
 ## 🛠️ 环境要求
@@ -49,105 +58,150 @@ pip install scipy seaborn
 
 ## 🚀 快速开始
 
-### 1. 8:2比例模型训练
+### 方法1: 滑动窗口训练（推荐）⭐
 
 ```bash
 # 激活环境
 conda activate timemixer
 
-# 训练8:2比例模型
+# 训练模型
+python scripts/train_sliding_window.py \
+    --model_id wellmix_640_160 \
+    --input_len 640 \
+    --output_len 160 \
+    --step_len 160 \
+    --train_epochs 100 \
+    --use_gpu
+
+# 测试模型
+python scripts/test_sliding_window.py \
+    --model_id wellmix_640_160 \
+    --max_wells 10
+```
+
+**参数说明**：
+- `input_len`: 输入序列长度（固定640步）
+- `output_len`: 输出序列长度（固定160步）
+- `step_len`: 滑动步长（默认=output_len，无重叠）
+- 比例 = 640:160 = 4:1
+
+### 方法2: 旧方法（兼容）
+
+```bash
+# 训练
 python scripts/train_8_2_ratio.py \
-    --model_id wellmix_8_2 \
-    --total_length 1000 \
+    --model_id wellmix_old \
+    --total_length 800 \
     --input_ratio 0.8 \
     --output_ratio 0.2 \
     --train_epochs 100
+
+# 测试
+python scripts/test_and_visualize.py \
+    --model_id wellmix_old \
+    --ratios 10,20,30,40,50,60,70,80,90
 ```
 
-### 2. 完整实验流程
+### 选择哪种方法？
 
-```bash
-# 运行完整实验
-python scripts/run_full_experiment.py \
-    --model_id my_experiment \
-    --test_wells 0,1,2,3,4,5,6,7,8,9 \
-    --ratios 10,20,30,40,50,60,70,80,90 \
-    --seq_len 800 \
-    --pred_len 200
-```
+| 场景 | 推荐方法 |
+|------|---------|
+| 新实验 | ✅ 滑动窗口（参数清晰，效果好）|
+| 与旧实验对比 | 旧方法（保持一致性）|
+| 不确定 | ✅ 滑动窗口（更符合标准实践）|
 
-### 3. 分步执行
-
-```bash
-# 步骤1: 训练模型
-python scripts/train_experiment.py --model_id my_model
-
-# 步骤2: 测试和可视化
-python scripts/test_and_visualize.py --model_id my_model --test_wells 0,1,2,3,4
-
-# 步骤3: 生成指标图表
-python scripts/plot_metrics.py --results_dir results_archive/my_model_no_smooth
-
-# 步骤4: 归档结果
-python scripts/archive_experiment.py --model_id my_model_no_smooth
-```
+详细对比请参考：[方法对比文档](METHOD_COMPARISON.md)
 
 ## 📊 核心功能
 
-### 不定长输入序列支持
+### 滑动窗口训练（新方法）
 
-- **动态输入长度**: 根据数据长度自动调整输入序列长度
-- **最大输入长度**: 3000步
-- **最小输入长度**: 100步
-- **填充策略**: 输入不足时零填充
+- **固定长度输入**: 所有样本输入长度完全一致（如640步）
+- **固定长度输出**: 所有样本输出长度完全一致（如160步）
+- **无填充无截断**: 所有数据都是真实值，无人工填充
+- **统一采样**: 训练、验证、测试使用相同策略
+- **可控密度**: 通过step_len调整样本数量
 
-### 定长输出序列
+### 灵活的比例控制
 
-- **固定输出长度**: 通过`pred_len`参数控制
-- **一致性保证**: 所有预测结果长度一致
-- **可配置性**: 支持任意长度的输出序列
+- **标准比例**: 4:1 (input_len=640, output_len=160)
+- **短期预测**: 2:1 (input_len=640, output_len=320)
+- **长期预测**: 8:1 (input_len=640, output_len=80)
+- **自定义**: 任意input_len和output_len组合
 
-### 8:2比例预测
+### 完整的实验流程
 
-- **输入比例**: 80%的历史数据作为输入
-- **输出比例**: 20%的未来数据作为预测目标
-- **灵活配置**: 支持自定义比例设置
+- **配置保存**: 自动保存所有实验参数
+- **模型检查点**: 保存最佳模型权重
+- **详细日志**: 训练过程完整记录
+- **结果可视化**: 自动生成图表和CSV
+- **按井统计**: 详细的per-well分析
 
 ## 🔧 配置参数
 
-| 参数 | 说明 | 默认值 | 8:2比例示例 |
-|------|------|--------|-------------|
-| `seq_len` | 输入序列长度 | 3000 | 800 |
-| `pred_len` | 预测长度 | 256 | 200 |
-| `d_model` | 模型维度 | 256 | 256 |
-| `n_heads` | 注意力头数 | 16 | 16 |
-| `e_layers` | 编码器层数 | 6 | 6 |
-| `d_layers` | 解码器层数 | 3 | 3 |
-| `d_ff` | 前馈网络维度 | 1024 | 1024 |
+### 滑动窗口参数
+
+| 参数 | 说明 | 推荐值 | 示例 |
+|------|------|--------|------|
+| `input_len` | 输入序列长度（固定） | 640 | 640 |
+| `output_len` | 输出序列长度（固定） | 160 | 160 |
+| `step_len` | 滑动窗口步长 | =output_len | 160 |
+
+### 模型参数
+
+| 参数 | 说明 | 默认值 | 大模型 |
+|------|------|--------|--------|
+| `d_model` | 模型维度 | 256 | 512 |
+| `n_heads` | 注意力头数 | 16 | 32 |
+| `e_layers` | 编码器层数 | 6 | 8 |
+| `d_layers` | 解码器层数 | 3 | 4 |
+| `d_ff` | 前馈网络维度 | 1024 | 2048 |
+
+### 训练参数
+
+| 参数 | 说明 | 默认值 | 快速实验 | 正式训练 |
+|------|------|--------|---------|---------|
+| `train_epochs` | 训练轮数 | 100 | 10 | 100-200 |
+| `batch_size` | 批大小 | 8 | 16 | 8 |
+| `learning_rate` | 学习率 | 1e-4 | 1e-3 | 1e-4 |
+| `patience` | 早停耐心 | 20 | 5 | 20 |
 
 ## 📈 输出结果
 
-### 可视化图表
-- **4色图表**: 早期历史(紫)、输入段(蓝)、真实输出(绿)、预测输出(橙)
-- **完整生命周期**: 展示井的完整生产周期
-- **预测窗口放大**: 详细展示预测区域
+### 可视化图表（滑动窗口）
+- **多窗口展示**: 显示所有滑动窗口的预测结果
+- **颜色编码**: 
+  - 浅灰色：完整井序列
+  - 蓝色：输入段（每个窗口）
+  - 绿色：真实输出
+  - 橙色虚线：预测输出
+  - 红色虚线：预测起点标记
 
 ### 评估指标
 - **MAE**: 平均绝对误差
 - **RMSE**: 均方根误差
 - **MAPE**: 平均绝对百分比误差
-- **跳跃分析**: 预测起始值与输入末尾值的差异
+- **按窗口**: 每个滑动窗口的独立指标
+- **按井汇总**: 每口井所有窗口的平均指标
 
-### 结果文件
+### 结果文件结构
 ```
-results_archive/
-└── {model_id}_no_smooth/
-    ├── detailed_results_no_smooth.csv      # 详细结果
-    ├── by_well_summary_no_smooth.csv       # 按井汇总
-    ├── overall_summary_no_smooth.csv       # 整体汇总
-    ├── well_0_ratio_50_no_smooth.pdf       # 井0-50%分割图表
-    ├── well_0_ratio_50_no_smooth.csv       # 井0-50%分割数据
-    └── ...                                  # 其他结果文件
+test_results/
+└── {model_id}/
+    ├── results.csv                  # 详细结果（每个窗口一行）
+    ├── well_statistics.csv          # 按井统计
+    ├── well_0_sliding_windows.pdf   # 井0的所有窗口可视化
+    ├── well_1_sliding_windows.pdf   # 井1的所有窗口可视化
+    └── ...
+
+experiments/
+└── {model_id}/
+    └── config.json                  # 实验配置
+
+checkpoints/
+└── {model_id}/
+    ├── checkpoint.pth               # 模型权重
+    └── training_log.txt             # 训练日志
 ```
 
 ## 🎯 使用场景
@@ -157,14 +211,26 @@ results_archive/
 - **生产规划**: 为生产决策提供数据支持
 - **异常检测**: 通过预测偏差识别异常情况
 
-## 📝 主要改进
+## 📝 主要特点
 
-1. **支持不定长输入**: 修改数据加载器支持动态输入长度
-2. **8:2比例预测**: 实现输入:输出=4:1的预测比例
-3. **无平滑过渡**: 去除人工平滑，保持模型原始预测能力
-4. **增强可视化**: 4色图表展示完整生命周期
-5. **实验管理**: 完整的训练、测试、可视化、归档流程
-6. **多井多比例**: 支持多种分割比例的训练策略
+### 新方法（滑动窗口）优势
+1. ✅ **参数清晰**: input_len和output_len含义明确
+2. ✅ **无数据损失**: 无填充、无截断，全是真实数据
+3. ✅ **训练测试一致**: 使用相同的采样策略
+4. ✅ **样本质量统一**: 所有样本长度完全一致
+5. ✅ **充分利用数据**: 长井生成更多有效样本
+6. ✅ **可控样本密度**: 通过step_len灵活调整
+
+### 向后兼容
+- 保留旧方法（多比例分割）的所有脚本
+- 新旧方法可以共存
+- 可以在同一数据集上对比两种方法
+
+### 完整的工具链
+- 🚀 训练：自动保存配置和模型
+- 🧪 测试：批量预测和指标计算
+- 📊 可视化：自动生成图表
+- 📁 管理：实验配置和结果归档
 
 ## 🤝 贡献
 
@@ -178,6 +244,30 @@ results_archive/
 
 如有问题，请通过GitHub Issues联系。
 
+## 📚 详细文档
+
+- **[滑动窗口使用指南](SLIDING_WINDOW_GUIDE.md)**: 新方法完整教程
+- **[方法对比](METHOD_COMPARISON.md)**: 新旧方法详细对比
+- **[更新日志](CHANGELOG.md)**: 所有更新记录
+- **[实验指南](EXPERIMENT_GUIDE.md)**: 旧方法使用说明（兼容）
+
+## ❓ 常见问题
+
+**Q: 应该使用哪种方法？**  
+A: 推荐使用滑动窗口方法（`train_sliding_window.py`），参数清晰，效果更好。
+
+**Q: 如何选择input_len和output_len？**  
+A: 建议 `input_len + output_len ≤ 平均井长度的50%`，常用比例4:1（如640:160）。
+
+**Q: step_len应该设多大？**  
+A: 初始实验用`step_len = output_len`（无重叠）；数据不足可用`output_len/2`（50%重叠）。
+
+**Q: 训练很慢怎么办？**  
+A: 启用GPU（`--use_gpu`），增大step_len，或减小模型容量。
+
+**Q: 旧模型还能用吗？**  
+A: 可以，旧脚本和模型完全保留，与新方法独立。
+
 ---
-**版本**: v2.0 (无平滑过渡版本)  
-**更新时间**: 2025-09-16
+**版本**: v3.0 (滑动窗口版本)  
+**更新时间**: 2025-10-10

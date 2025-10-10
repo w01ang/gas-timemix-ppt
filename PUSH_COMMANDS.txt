@@ -1,0 +1,42 @@
+# 推送到GitHub的命令
+
+## 步骤1: 在GitHub创建新仓库
+访问: https://github.com/new
+- Repository name: gas-timemix-ppt
+- Description: TimeMixer井生命周期预测实验 - 8:2比例时序预测模型
+- 不要勾选 "Initialize with README"
+- 点击 "Create repository"
+
+## 步骤2: 推送代码
+cd /Users/wangjr/Documents/yk/timemixer/timemixer-ppt/gas-timemix
+
+# 移除原远程仓库
+git remote remove origin
+
+# 添加新远程仓库（替换YOUR_USERNAME为你的GitHub用户名）
+git remote add origin https://github.com/YOUR_USERNAME/gas-timemix-ppt.git
+
+# 推送到main分支
+git push -u origin main
+
+## 步骤3: 验证
+访问: https://github.com/YOUR_USERNAME/gas-timemix-ppt
+
+## 当前提交历史
+已有12个提交，包括:
+- 2d24c72 Update documentation and experiment config
+- 40be4c0 Add GitHub setup guide and automated push script  
+- 643aa32 Add experiment guide and improvements
+- 60444d5 Enhanced TimeMixer for Well Lifecycle Prediction
+- ... (更多提交)
+
+## 如果需要认证
+使用Personal Access Token:
+1. 访问 https://github.com/settings/tokens
+2. Generate new token (classic)
+3. 勾选 "repo" 权限
+4. 推送时用token作为密码
+
+或使用SSH:
+git remote set-url origin git@github.com:YOUR_USERNAME/gas-timemix-ppt.git
+git push -u origin main

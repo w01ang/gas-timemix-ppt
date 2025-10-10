@@ -23,7 +23,7 @@ from data_provider.data_factory import data_provider
 import torch
 
 # 设置中文字体
-plt.rcParams['font.sans-serif'] = ['SimHei', 'Arial Unicode MS', 'DejaVu Sans']
+plt.rcParams['font.sans-serif'] = ['SimHei', 'Arial Unicode MS', 'DejaVu Sans', 'PingFang SC', 'Times New Roman']
 plt.rcParams['axes.unicode_minus'] = False
 
 def load_experiment_config(model_id):

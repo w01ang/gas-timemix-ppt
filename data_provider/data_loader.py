@@ -884,18 +884,29 @@ class Dataset_Solar(Dataset):
 class Dataset_WellsColumns(Dataset):
     def __init__(self, root_path, flag='train', size=None,
                  features='S', data_path='preprocessed_daily_gas_by_well.csv',
-                 target=None, scale=True, timeenc=0, freq='d', seasonal_patterns=None):
-        # 本数据集：CSV每一列=一口井的日产量序列，无日期列，列名为井ID；各井长度可能不同，NaN作为缺失/填充
-        # size = [seq_len, label_len, pred_len] - 现在seq_len是最大输入长度，实际输入长度根据分割点动态调整
+                 target=None, scale=True, timeenc=0, freq='d', seasonal_patterns=None,
+                 step_len=None):
+        """
+        井产量数据集 - 使用滑动窗口划分训练/测试样本
+        
+        Args:
+            size: [input_len, label_len, output_len]
+                - input_len: 输入序列长度（固定）
+                - label_len: 标签起始长度（通常等于output_len）
+                - output_len: 输出序列长度（固定）
+            step_len: 滑动窗口步长，默认为output_len（无重叠）
+        """
         if size is None:
-            raise ValueError('size must be provided as [max_seq_len, label_len, pred_len]')
-        self.max_seq_len = size[0]  # 最大输入长度
-        self.label_len = size[1]
-        self.pred_len = size[2]
+            raise ValueError('size must be provided as [input_len, label_len, output_len]')
+        self.input_len = size[0]  # 固定输入长度
+        self.label_len = size[1]   # 标签长度（通常等于output_len）
+        self.output_len = size[2]  # 固定输出长度
+        self.step_len = step_len if step_len is not None else self.output_len  # 默认步长=输出长度（无重叠）
+        
         assert flag in ['train', 'val', 'test']
         self.set_type = {'train': 0, 'val': 1, 'test': 2}[flag]
 
-        self.features = features  # 仅支持'S'或'M'，通常为'S'（单变量预测）
+        self.features = features
         self.scale = scale
         self.timeenc = timeenc
         self.freq = freq
@@ -909,68 +920,69 @@ class Dataset_WellsColumns(Dataset):
         file_path = os.path.join(self.root_path, self.data_path)
         if not os.path.exists(file_path):
             raise FileNotFoundError(f'CSV not found: {file_path}')
-        # 读取：每列为一口井；允许不同长度与NaN
+        
+        # 读取CSV：每列为一口井的时间序列
         raw_df = pd.read_csv(file_path)
-        # 统一为float
         raw_df = raw_df.apply(pd.to_numeric, errors='coerce')
 
-        # 将每一列当作一个样本（一个井的全生命周期序列），去掉全NaN列
+        # 收集所有有效井序列
         all_well_names = [c for c in raw_df.columns if raw_df[c].notna().any()]
         series_all = []
+        min_window_size = self.input_len + self.output_len
+        
         for c in all_well_names:
             s = raw_df[c].dropna().values.astype(np.float32)
-            # 保证至少两半+窗口，现在需要更多数据支持3000步输入
-            if len(s) >= (self.max_seq_len + self.pred_len + 2):
+            # 只保留长度足够的井（至少能生成一个窗口）
+            if len(s) >= min_window_size:
                 series_all.append(s)
-        if len(series_all) == 0:
-            raise ValueError('No well has enough length for one sample window.')
-
-        # 以井为单位划分：前80%井用于train/val，后20%井用于test
-        num_wells = len(series_all)
-        split_idx = max(1, int(num_wells * 0.8))
         
-        # 全局Scaler（基于训练井的前半段）
+        if len(series_all) == 0:
+            raise ValueError(f'No well has enough length (>={min_window_size}) for window generation.')
+
+        # 按井划分train/val/test: 前70%井训练，10%验证，20%测试
+        num_wells = len(series_all)
+        train_split = max(1, int(num_wells * 0.7))
+        val_split = max(train_split + 1, int(num_wells * 0.8))
+        
+        # 全局Scaler（基于训练井的全部数据）
         self.scaler = StandardScaler()
         if self.scale:
-            train_concat = []
-            # 拟合仅在构建train/val时进行；test沿用已拟合参数
-            if self.set_type == 2:
-                # 重建train集合
-                train_wells = series_all[:split_idx]
-            else:
-                train_wells = series_all[:split_idx]
-            for s in train_wells:
-                half = len(s) // 2
-                if half > 0:
-                    train_concat.append(s[:half])
-            if len(train_concat) == 0:
-                raise ValueError('No training data found to fit scaler.')
-            train_concat = np.concatenate(train_concat, axis=0)
+            train_wells = series_all[:train_split]
+            train_concat = np.concatenate(train_wells, axis=0)
             self.scaler.mean_ = np.array([np.mean(train_concat)])
             self.scaler.scale_ = np.array([np.std(train_concat) + 1e-8])
         else:
             self.scaler.mean_ = np.array([0.0])
             self.scaler.scale_ = np.array([1.0])
 
-        # 分配井系列
-        if self.set_type in (0, 1):  # train/val
-            self.well_series = series_all[:split_idx]
+        # 分配井序列
+        if self.set_type == 0:  # train
+            self.well_series = series_all[:train_split]
+        elif self.set_type == 1:  # val
+            self.well_series = series_all[train_split:val_split]
         else:  # test
-            self.well_series = series_all[split_idx:]
+            self.well_series = series_all[val_split:]
 
-        # 构建样本索引：每口井从10%到90%的多个分割点生成样本
+        # 使用滑动窗口生成样本索引
         self.index_map = []
-        self.split_ratios = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]  # 10%到90%
+        total_windows = 0
         
         for well_idx, well_data in enumerate(self.well_series):
             well_length = len(well_data)
-            for ratio in self.split_ratios:
-                split_point = int(well_length * ratio)
-                # 确保分割点后有足够的数据进行预测，现在支持更长的输入
-                if split_point >= 100 and (well_length - split_point) >= self.pred_len:  # 最小输入长度100
-                    self.index_map.append((well_idx, ratio, split_point))
+            # 计算该井可以生成多少个窗口
+            num_windows = (well_length - min_window_size) // self.step_len + 1
+            
+            for window_idx in range(num_windows):
+                start_idx = window_idx * self.step_len
+                end_idx = start_idx + self.input_len + self.output_len
+                
+                # 确保不超出井的长度
+                if end_idx <= well_length:
+                    self.index_map.append((well_idx, start_idx))
+                    total_windows += 1
         
-        print(f'Generated {len(self.index_map)} samples from {len(self.well_series)} wells with {len(self.split_ratios)} split ratios')
+        print(f'Generated {len(self.index_map)} sliding window samples from {len(self.well_series)} wells '
+              f'(input_len={self.input_len}, output_len={self.output_len}, step={self.step_len})')
 
     def _transform(self, x):
         if self.scale:
@@ -984,43 +996,27 @@ class Dataset_WellsColumns(Dataset):
         return len(self.index_map)
 
     def __getitem__(self, index):
-        well_idx, ratio, split_point = self.index_map[index]
-        s = self.well_series[well_idx]
+        well_idx, start_idx = self.index_map[index]
+        well_data = self.well_series[well_idx]
         
-        # 前半段：从开始到分割点（动态输入长度）
-        first_half = s[:split_point]
-        # 后半段：从分割点开始
-        second_half = s[split_point:]
-
-        # X: 取前半段全部数据作为输入（动态长度）
-        seq_x = first_half.copy()
+        # 提取固定长度的输入和输出窗口
+        input_end = start_idx + self.input_len
+        output_end = input_end + self.output_len
         
-        # 如果输入长度超过最大长度，取最后max_seq_len个点
-        if len(seq_x) > self.max_seq_len:
-            seq_x = seq_x[-self.max_seq_len:]
+        # X: 输入序列 [start_idx : start_idx + input_len]
+        seq_x = well_data[start_idx:input_end].copy()
         
-        # 如果输入长度不足，用零填充到max_seq_len
-        if len(seq_x) < self.max_seq_len:
-            pad = np.zeros((self.max_seq_len - len(seq_x),), dtype=np.float32)
-            seq_x = np.concatenate([pad, seq_x], axis=0)
-
-        # Y: 从后半段起始取 label_len + pred_len
-        target_needed = self.label_len + self.pred_len
-        if len(second_half) >= target_needed:
-            seq_y = second_half[:target_needed]
-        else:
-            seq_y = second_half
-            pad = np.zeros((target_needed - len(seq_y),), dtype=np.float32)
-            seq_y = np.concatenate([seq_y, pad], axis=0)
-
-        # 形状对齐为 (T, C=1)
+        # Y: 输出序列 [start_idx + input_len : start_idx + input_len + output_len]
+        # 包含label_len + pred_len部分
+        seq_y = well_data[input_end:output_end].copy()
+        
+        # 标准化
         seq_x = self._transform(seq_x.astype(np.float32)).reshape(-1, 1)
         seq_y = self._transform(seq_y.astype(np.float32)).reshape(-1, 1)
-
-        # 无时间戳特征，使用零占位 (freq='d' 需要3维: month/day/weekday)
-        seq_x_mark = torch.zeros((seq_x.shape[0], 3))
-        seq_y_mark = torch.zeros((seq_y.shape[0], 3))
         
-        # 只返回4个值，与原始框架兼容
+        # 时间特征占位（freq='d' 需要3维: month/day/weekday）
+        seq_x_mark = torch.zeros((self.input_len, 3))
+        seq_y_mark = torch.zeros((self.output_len, 3))
+        
         return seq_x, seq_y, seq_x_mark, seq_y_mark
 

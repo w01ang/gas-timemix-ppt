@@ -18,7 +18,7 @@ from exp.exp_long_term_forecasting import Exp_Long_Term_Forecast
 from argparse import Namespace
 
 # 设置中文字体
-plt.rcParams['font.sans-serif'] = ['SimHei', 'Arial Unicode MS', 'DejaVu Sans']
+plt.rcParams['font.sans-serif'] = ['SimHei', 'Arial Unicode MS', 'DejaVu Sans', 'Times New Roman', 'PingFang SC']
 plt.rcParams['axes.unicode_minus'] = False
 
 def test_no_smooth_prediction():

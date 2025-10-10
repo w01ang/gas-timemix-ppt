@@ -75,17 +75,25 @@ def data_provider(args, flag):
     else:
         if args.data == 'm4':
             drop_last = False
-        data_set = Data(
-            root_path=args.root_path,
-            data_path=args.data_path,
-            flag=flag,
-            size=[args.seq_len, args.label_len, args.pred_len],
-            features=args.features,
-            target=args.target,
-            timeenc=timeenc,
-            freq=freq,
-            seasonal_patterns=args.seasonal_patterns
-        )
+        
+        # 构建数据集参数
+        dataset_kwargs = {
+            'root_path': args.root_path,
+            'data_path': args.data_path,
+            'flag': flag,
+            'size': [args.seq_len, args.label_len, args.pred_len],
+            'features': args.features,
+            'target': args.target,
+            'timeenc': timeenc,
+            'freq': freq,
+            'seasonal_patterns': args.seasonal_patterns
+        }
+        
+        # 如果是WELLS数据集且提供了step_len参数，则传递
+        if args.data == 'WELLS' and hasattr(args, 'step_len') and args.step_len is not None:
+            dataset_kwargs['step_len'] = args.step_len
+        
+        data_set = Data(**dataset_kwargs)
         print(flag, len(data_set))
         data_loader = DataLoader(
             data_set,
