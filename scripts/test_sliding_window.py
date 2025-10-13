@@ -68,7 +68,7 @@ def create_test_args(config):
         e_layers=config['e_layers'],
         d_layers=config['d_layers'],
         d_ff=config['d_ff'],
-        moving_avg=49,
+        moving_avg=1000,  # 改为1000，适合3000步输入的季节性分解
         factor=1,
         distil=True,
         dropout=0.1,
@@ -78,7 +78,7 @@ def create_test_args(config):
         channel_independence=1,
         decomp_method='moving_avg',
         use_norm=1,
-        down_sampling_layers=1,
+        down_sampling_layers=2,  # 改为2层，产生3个尺度(3000/1500/750)
         down_sampling_window=2,
         down_sampling_method='avg',
         use_future_temporal_feature=0,

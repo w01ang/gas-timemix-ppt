@@ -261,6 +261,17 @@ def main():
     parser.add_argument('--dropout', type=float, default=0.1, help='Dropout比例')
     parser.add_argument('--use_gpu', action='store_true', help='启用GPU/MPS加速')
     
+    # 季节-趋势分解参数
+    parser.add_argument('--moving_avg', type=int, default=1000, 
+                        help='季节-趋势分解的移动平均窗口大小（默认1000，约为输入长度的1/3）')
+    parser.add_argument('--down_sampling_layers', type=int, default=2, 
+                        help='多尺度下采样层数（默认2，产生3个尺度）')
+    parser.add_argument('--down_sampling_window', type=int, default=2, 
+                        help='下采样窗口大小（默认2，每层缩减1/2）')
+    parser.add_argument('--down_sampling_method', type=str, default='avg', 
+                        choices=['avg', 'max', 'conv'],
+                        help='下采样方法（默认avg平均池化）')
+    
     # 训练参数
     parser.add_argument('--train_epochs', type=int, default=100, help='训练轮数')
     parser.add_argument('--batch_size', type=int, default=8, help='批大小')
@@ -293,6 +304,19 @@ def main():
     
     print(f"   输入:输出比例 = {args.input_len}:{args.output_len} = {args.input_len/args.output_len:.2f}:1")
     
+    print(f"\n🎨 季节-趋势分解配置:")
+    print(f"   移动平均窗口 (moving_avg): {args.moving_avg}")
+    print(f"   下采样层数 (down_sampling_layers): {args.down_sampling_layers}")
+    print(f"   下采样窗口 (down_sampling_window): {args.down_sampling_window}")
+    print(f"   下采样方法 (down_sampling_method): {args.down_sampling_method}")
+    
+    # 计算产生的尺度
+    scales = [args.input_len]
+    for i in range(args.down_sampling_layers):
+        scales.append(scales[-1] // args.down_sampling_window)
+    print(f"   产生的尺度层级: {' → '.join(map(str, scales))} ({len(scales)}个尺度)")
+    print(f"   季节周期占比: {args.moving_avg}/{args.input_len} = {args.moving_avg/args.input_len*100:.1f}%")
+    
     # 构建模型配置
     model_args = Namespace(
         task_name='long_term_forecast',
@@ -322,7 +346,7 @@ def main():
         e_layers=args.e_layers,
         d_layers=args.d_layers,
         d_ff=args.d_ff,
-        moving_avg=49,
+        moving_avg=args.moving_avg,  # 使用命令行参数
         factor=1,
         distil=True,
         dropout=args.dropout,
@@ -332,9 +356,9 @@ def main():
         channel_independence=1,
         decomp_method='moving_avg',
         use_norm=1,
-        down_sampling_layers=1,
-        down_sampling_window=2,
-        down_sampling_method='avg',
+        down_sampling_layers=args.down_sampling_layers,  # 使用命令行参数
+        down_sampling_window=args.down_sampling_window,  # 使用命令行参数
+        down_sampling_method=args.down_sampling_method,  # 使用命令行参数
         use_future_temporal_feature=0,
         mask_rate=0.125,
         anomaly_ratio=0.25,
