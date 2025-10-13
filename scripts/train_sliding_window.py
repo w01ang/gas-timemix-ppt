@@ -262,8 +262,8 @@ def main():
     parser.add_argument('--use_gpu', action='store_true', help='启用GPU/MPS加速')
     
     # 季节-趋势分解参数
-    parser.add_argument('--moving_avg', type=int, default=1000, 
-                        help='季节-趋势分解的移动平均窗口大小（默认1000，约为输入长度的1/3）')
+    parser.add_argument('--moving_avg', type=int, default=999, 
+                        help='季节-趋势分解的移动平均窗口大小（默认999，约为输入长度的1/3，必须为奇数）')
     parser.add_argument('--down_sampling_layers', type=int, default=2, 
                         help='多尺度下采样层数（默认2，产生3个尺度）')
     parser.add_argument('--down_sampling_window', type=int, default=2, 

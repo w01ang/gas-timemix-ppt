@@ -67,7 +67,7 @@ def create_test_args(config):
         e_layers=config['e_layers'],
         d_layers=config['d_layers'],
         d_ff=config['d_ff'],
-        moving_avg=1000,  # 改为1000，适合3000步输入的季节性分解
+        moving_avg=999,  # 改为999（奇数），适合3000步输入的季节性分解
         factor=1,
         distil=True,
         dropout=0.1,
